@@ -3,6 +3,8 @@ import { prisma } from "@/lib/db";
 import { requireCenterId } from "@/lib/auth-helpers";
 import { DayForm } from "./day-form";
 import { saveDayAttendanceAction } from "./actions";
+import { Button, Card, PageHeader, Select } from "@/components/ui";
+import { ClipboardListIcon } from "@/components/icons";
 
 function todayStr(): string {
   return new Date().toISOString().slice(0, 10);
@@ -43,37 +45,40 @@ export default async function AttendancePage({
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-slate-900">Điểm Danh theo ngày</h1>
-        <Link
-          href="/dashboard/attendance/bulk"
-          className="text-sm text-slate-600 underline hover:text-slate-900"
-        >
-          📋 Điểm danh hàng loạt →
-        </Link>
-      </div>
+    <div className="space-y-5">
+      <PageHeader
+        title="Điểm Danh theo ngày"
+        action={
+          <Link href="/dashboard/attendance/bulk">
+            <Button variant="secondary">
+              <ClipboardListIcon /> Điểm danh hàng loạt
+            </Button>
+          </Link>
+        }
+      />
 
-      <form className="flex gap-2" method="get">
-        <select name="classId" defaultValue={classId} className="rounded-md border border-slate-300 px-3 py-2 text-sm">
-          {classes.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
-        <input
-          type="date"
-          name="date"
-          defaultValue={date}
-          className="rounded-md border border-slate-300 px-3 py-2 text-sm"
-        />
-        <select name="subjectIndex" defaultValue={subjectIndex} className="rounded-md border border-slate-300 px-3 py-2 text-sm">
-          <option value={0}>Buổi 1</option>
-          <option value={1}>Buổi 2</option>
-        </select>
-        <button className="rounded-md border border-slate-300 px-3 py-2 text-sm">Xem</button>
-      </form>
+      <Card>
+        <form className="flex flex-wrap gap-2" method="get">
+          <Select name="classId" defaultValue={classId} className="w-auto min-w-[140px]">
+            {classes.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </Select>
+          <input
+            type="date"
+            name="date"
+            defaultValue={date}
+            className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 text-[15px] text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+          />
+          <Select name="subjectIndex" defaultValue={subjectIndex} className="w-auto min-w-[110px]">
+            <option value={0}>Buổi 1</option>
+            <option value={1}>Buổi 2</option>
+          </Select>
+          <Button type="submit">Xem</Button>
+        </form>
+      </Card>
 
       {classes.length === 0 ? (
         <p className="text-slate-500">Chưa có lớp nào, tạo lớp trước.</p>

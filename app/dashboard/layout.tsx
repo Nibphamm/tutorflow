@@ -1,17 +1,10 @@
-import Link from "next/link";
 import { Suspense } from "react";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { MonthYearPicker } from "@/components/month-year-picker";
+import { NavLinks } from "@/components/nav-links";
+import { LogOutIcon } from "@/components/icons";
 import { signOutAction } from "./actions";
-
-const NAV = [
-  { href: "/dashboard/students", label: "Học sinh" },
-  { href: "/dashboard/classes", label: "Lớp" },
-  { href: "/dashboard/attendance", label: "Điểm Danh" },
-  { href: "/dashboard/remarks", label: "Nhận Xét" },
-  { href: "/dashboard/settings", label: "Thiết lập" },
-];
 
 export default async function DashboardLayout({
   children,
@@ -24,37 +17,36 @@ export default async function DashboardLayout({
     : null;
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-3">
-            <span className="font-semibold text-slate-900">
+    <div className="min-h-dvh bg-slate-50">
+      <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-600 text-sm font-bold text-white">
+              TF
+            </div>
+            <span className="truncate font-semibold text-slate-900">
               {center?.displayName || center?.name || "TutorFlow"}
             </span>
-            <span className="rounded-full bg-slate-900 px-2 py-0.5 text-xs font-medium text-white">
-              MVP
-            </span>
           </div>
-          <Suspense fallback={null}>
-            <MonthYearPicker />
-          </Suspense>
-          <form action={signOutAction}>
-            <button className="text-sm text-slate-500 hover:text-slate-900">
-              Đăng xuất
-            </button>
-          </form>
+
+          <div className="flex shrink-0 items-center gap-2">
+            <Suspense fallback={null}>
+              <MonthYearPicker />
+            </Suspense>
+            <form action={signOutAction}>
+              <button
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+                aria-label="Đăng xuất"
+                title="Đăng xuất"
+              >
+                <LogOutIcon />
+              </button>
+            </form>
+          </div>
         </div>
-        <nav className="mx-auto flex max-w-6xl gap-4 px-4 pb-2 text-sm">
-          {NAV.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="text-slate-600 hover:text-slate-900"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+        <div className="mx-auto max-w-6xl px-2 pb-2 sm:px-4">
+          <NavLinks />
+        </div>
       </header>
       <main className="mx-auto max-w-6xl px-4 py-6">{children}</main>
     </div>

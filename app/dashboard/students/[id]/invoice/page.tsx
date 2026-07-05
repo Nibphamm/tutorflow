@@ -5,6 +5,7 @@ import { resolvePeriod, monthRange } from "@/lib/period";
 import { computeTuition } from "@/lib/fees";
 import { buildVietQrUrl } from "@/lib/vietqr";
 import { InvoiceCard } from "./invoice-card";
+import { PageHeader } from "@/components/ui";
 
 export default async function InvoicePage({
   params,
@@ -50,10 +51,8 @@ export default async function InvoicePage({
     : null;
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-lg font-semibold text-slate-900">
-        Phiếu Học Phí — {student.name}
-      </h1>
+    <div className="space-y-5">
+      <PageHeader title={`Phiếu Học Phí — ${student.name}`} />
       <InvoiceCard
         studentName={student.name}
         className={student.class.name}

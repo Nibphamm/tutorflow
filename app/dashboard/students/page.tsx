@@ -4,6 +4,8 @@ import { requireCenterId } from "@/lib/auth-helpers";
 import { resolvePeriod, monthRange, daysInMonth } from "@/lib/period";
 import { computeTuition, formatVnd } from "@/lib/fees";
 import { deleteStudentAction } from "./actions";
+import { Button, Card, EmptyState, Input, PageHeader, Select } from "@/components/ui";
+import { PencilIcon, PlusIcon, SearchIcon, TrashIcon } from "@/components/icons";
 
 export default async function StudentsPage({
   searchParams,
@@ -43,99 +45,149 @@ export default async function StudentsPage({
     byStudent.set(a.studentId, list);
   }
 
+  const rows = students.map((s) => {
+    const att = byStudent.get(s.id) ?? [];
+    const takenDates = new Set(att.map((a) => a.date.toISOString().slice(0, 10)));
+    const tuition = computeTuition(s, att);
+    const sessions = tuition.subjects.reduce((sum, x) => sum + x.sessions, 0);
+    return { student: s, taken: takenDates.size, sessions, total: tuition.total };
+  });
+
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-slate-900">Học sinh</h1>
-        <Link
-          href="/dashboard/students/new"
-          className="rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white"
-        >
-          + Thêm học sinh
-        </Link>
-      </div>
+    <div className="space-y-5">
+      <PageHeader
+        title="Học sinh"
+        action={
+          <Link href="/dashboard/students/new">
+            <Button variant="primary">
+              <PlusIcon /> Thêm học sinh
+            </Button>
+          </Link>
+        }
+      />
 
-      <form className="flex gap-2" method="get">
-        <input type="hidden" name="month" value={period.month} />
-        <input type="hidden" name="year" value={period.year} />
-        <input
-          name="q"
-          defaultValue={sp.q}
-          placeholder="Tìm theo tên..."
-          className="rounded-md border border-slate-300 px-3 py-2 text-sm"
-        />
-        <select
-          name="classId"
-          defaultValue={sp.classId || ""}
-          className="rounded-md border border-slate-300 px-3 py-2 text-sm"
-        >
-          <option value="">Tất cả lớp</option>
-          {classes.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
-        <button className="rounded-md border border-slate-300 px-3 py-2 text-sm">Lọc</button>
-      </form>
+      <Card>
+        <form className="flex flex-wrap gap-2" method="get">
+          <input type="hidden" name="month" value={period.month} />
+          <input type="hidden" name="year" value={period.year} />
+          <div className="relative min-w-[160px] flex-1">
+            <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Input name="q" defaultValue={sp.q} placeholder="Tìm theo tên..." className="pl-9" />
+          </div>
+          <Select name="classId" defaultValue={sp.classId || ""} className="w-auto min-w-[140px]">
+            <option value="">Tất cả lớp</option>
+            {classes.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </Select>
+          <Button type="submit">Lọc</Button>
+        </form>
+      </Card>
 
-      <table className="w-full overflow-hidden rounded-lg bg-white text-sm shadow">
-        <thead className="bg-slate-100 text-left text-slate-600">
-          <tr>
-            <th className="px-4 py-2">Học sinh</th>
-            <th className="px-4 py-2">Lớp</th>
-            <th className="px-4 py-2">Điểm danh</th>
-            <th className="px-4 py-2">Số buổi đã học</th>
-            <th className="px-4 py-2">Học phí tháng</th>
-            <th className="px-4 py-2"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {students.map((s) => {
-            const att = byStudent.get(s.id) ?? [];
-            const takenDates = new Set(att.map((a) => a.date.toISOString().slice(0, 10)));
-            const tuition = computeTuition(s, att);
-            const sessions = tuition.subjects.reduce((sum, x) => sum + x.sessions, 0);
-            return (
-              <tr key={s.id} className="border-t border-slate-100">
-                <td className="px-4 py-2">
+      {rows.length === 0 ? (
+        <EmptyState>Chưa có học sinh nào. Bấm “Thêm học sinh” để bắt đầu.</EmptyState>
+      ) : (
+        <>
+          {/* Mobile: danh sách thẻ */}
+          <div className="grid gap-3 sm:hidden">
+            {rows.map(({ student: s, taken, sessions, total }) => (
+              <Card key={s.id}>
+                <div className="flex items-start justify-between gap-2">
                   <Link
                     href={`/dashboard/students/${s.id}/invoice?month=${period.month}&year=${period.year}`}
-                    className="font-medium text-slate-900 hover:underline"
+                    className="font-semibold text-slate-900 hover:text-indigo-600"
                   >
                     {s.name}
                   </Link>
-                </td>
-                <td className="px-4 py-2">{s.class.name}</td>
-                <td className="px-4 py-2">
-                  {takenDates.size}/{totalDays}
-                </td>
-                <td className="px-4 py-2">{sessions}</td>
-                <td className="px-4 py-2">{formatVnd(tuition.total)}</td>
-                <td className="px-4 py-2 text-right whitespace-nowrap">
-                  <Link
-                    href={`/dashboard/students/${s.id}/edit`}
-                    className="mr-3 text-slate-600 hover:underline"
-                  >
-                    Sửa
-                  </Link>
-                  <form action={deleteStudentAction} className="inline">
-                    <input type="hidden" name="id" value={s.id} />
-                    <button className="text-red-600 hover:underline">Xoá</button>
-                  </form>
-                </td>
-              </tr>
-            );
-          })}
-          {students.length === 0 && (
-            <tr>
-              <td colSpan={6} className="px-4 py-6 text-center text-slate-400">
-                Chưa có học sinh nào
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+                  <div className="flex gap-1">
+                    <Link
+                      href={`/dashboard/students/${s.id}/edit`}
+                      className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100"
+                      aria-label="Sửa"
+                    >
+                      <PencilIcon />
+                    </Link>
+                    <form action={deleteStudentAction}>
+                      <input type="hidden" name="id" value={s.id} />
+                      <button
+                        className="flex h-8 w-8 items-center justify-center rounded-lg text-red-500 hover:bg-red-50"
+                        aria-label="Xoá"
+                      >
+                        <TrashIcon />
+                      </button>
+                    </form>
+                  </div>
+                </div>
+                <p className="mt-0.5 text-sm text-slate-500">Lớp {s.class.name}</p>
+                <div className="mt-3 flex items-center justify-between text-sm">
+                  <span className="text-slate-500">
+                    Điểm danh {taken}/{totalDays} · {sessions} buổi
+                  </span>
+                  <span className="font-semibold text-slate-900">{formatVnd(total)}</span>
+                </div>
+              </Card>
+            ))}
+          </div>
+
+          {/* Desktop: bảng */}
+          <Card padded={false} className="hidden overflow-hidden sm:block">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-50 text-left text-slate-500">
+                <tr>
+                  <th className="px-4 py-3 font-medium">Học sinh</th>
+                  <th className="px-4 py-3 font-medium">Lớp</th>
+                  <th className="px-4 py-3 font-medium">Điểm danh</th>
+                  <th className="px-4 py-3 font-medium">Số buổi đã học</th>
+                  <th className="px-4 py-3 font-medium">Học phí tháng</th>
+                  <th className="px-4 py-3"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {rows.map(({ student: s, taken, sessions, total }) => (
+                  <tr key={s.id} className="hover:bg-slate-50/60">
+                    <td className="px-4 py-3">
+                      <Link
+                        href={`/dashboard/students/${s.id}/invoice?month=${period.month}&year=${period.year}`}
+                        className="font-medium text-slate-900 hover:text-indigo-600 hover:underline"
+                      >
+                        {s.name}
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3 text-slate-600">{s.class.name}</td>
+                    <td className="px-4 py-3 text-slate-600">
+                      {taken}/{totalDays}
+                    </td>
+                    <td className="px-4 py-3 text-slate-600">{sessions}</td>
+                    <td className="px-4 py-3 font-medium text-slate-900">{formatVnd(total)}</td>
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <Link
+                          href={`/dashboard/students/${s.id}/edit`}
+                          className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100"
+                          aria-label="Sửa"
+                        >
+                          <PencilIcon />
+                        </Link>
+                        <form action={deleteStudentAction}>
+                          <input type="hidden" name="id" value={s.id} />
+                          <button
+                            className="flex h-8 w-8 items-center justify-center rounded-lg text-red-500 hover:bg-red-50"
+                            aria-label="Xoá"
+                          >
+                            <TrashIcon />
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Card>
+        </>
+      )}
     </div>
   );
 }

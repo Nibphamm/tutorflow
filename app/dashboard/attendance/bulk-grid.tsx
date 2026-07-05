@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Badge, Button, Card, EmptyState } from "@/components/ui";
+import { CalendarIcon, CheckSquareIcon, SaveIcon, XSquareIcon } from "@/components/icons";
 
 type StudentRow = { id: string; name: string };
 type DayInfo = { day: number; weekday: string; isWeekday: boolean };
@@ -59,8 +61,12 @@ export function BulkGrid({
 
   const selectedCount = Object.values(checked).filter(Boolean).length;
 
+  if (students.length === 0) {
+    return <EmptyState>Lớp chưa có học sinh.</EmptyState>;
+  }
+
   return (
-    <form action={action} className="space-y-3">
+    <form action={action} className="space-y-4">
       <input type="hidden" name="classId" value={classId} />
       <input type="hidden" name="subjectIndex" value={subjectIndex} />
       <input type="hidden" name="year" value={year} />
@@ -81,65 +87,66 @@ export function BulkGrid({
         )
       )}
 
-      <div className="flex items-center gap-2 text-sm">
-        <button type="button" onClick={() => bulkSet(true, false)} className="rounded-md border border-slate-300 px-2 py-1">
-          ✅ Chọn hết
-        </button>
-        <button type="button" onClick={() => bulkSet(false, false)} className="rounded-md border border-slate-300 px-2 py-1">
-          🗑️ Bỏ hết
-        </button>
-        <button type="button" onClick={() => bulkSet(true, true)} className="rounded-md border border-slate-300 px-2 py-1">
-          Chọn 📅 T2→T6
-        </button>
-        <span className="text-slate-500">Đã chọn: {selectedCount} buổi</span>
+      <div className="flex flex-wrap items-center gap-2">
+        <Button type="button" variant="secondary" onClick={() => bulkSet(true, false)}>
+          <CheckSquareIcon /> Chọn hết
+        </Button>
+        <Button type="button" variant="secondary" onClick={() => bulkSet(false, false)}>
+          <XSquareIcon /> Bỏ hết
+        </Button>
+        <Button type="button" variant="secondary" onClick={() => bulkSet(true, true)}>
+          <CalendarIcon /> Chọn T2→T6
+        </Button>
+        <Badge tone="neutral">Đã chọn: {selectedCount} buổi</Badge>
       </div>
 
-      <div className="overflow-x-auto rounded-lg bg-white shadow">
-        <table className="text-xs">
-          <thead className="bg-slate-100">
-            <tr>
-              <th className="sticky left-0 z-10 bg-slate-100 px-3 py-2 text-left">Học sinh</th>
+      <Card padded={false} className="overflow-x-auto">
+        <table className="text-sm">
+          <thead>
+            <tr className="bg-slate-50">
+              <th className="sticky left-0 z-10 min-w-[140px] bg-slate-50 px-3 py-2 text-left font-medium text-slate-500">
+                Học sinh
+              </th>
               {days.map((d) => (
-                <th key={d.day} className="w-8 px-1 py-2 text-center">
+                <th
+                  key={d.day}
+                  className={
+                    "min-w-9 px-1 py-2 text-center text-xs font-medium " +
+                    (d.isWeekday ? "text-slate-500" : "text-slate-400")
+                  }
+                >
                   <div>{d.day}</div>
-                  <div className="text-slate-400">{d.weekday}</div>
+                  <div className="text-[10px]">{d.weekday}</div>
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-slate-100">
             {students.map((s) => (
-              <tr key={s.id} className="border-t border-slate-100">
-                <td className="sticky left-0 z-10 bg-white px-3 py-1 font-medium whitespace-nowrap">
+              <tr key={s.id}>
+                <td className="sticky left-0 z-10 min-w-[140px] bg-white px-3 py-2 font-medium text-slate-900">
                   {s.name}
                 </td>
                 {days.map((d) => (
-                  <td key={d.day} className="text-center">
+                  <td key={d.day} className="px-1 py-2 text-center">
                     <input
                       type="checkbox"
                       checked={!!checked[key(s.id, d.day)]}
                       onChange={() => toggle(s.id, d.day)}
+                      className="h-4 w-4 cursor-pointer accent-indigo-600"
+                      aria-label={`${s.name} ngày ${d.day}`}
                     />
                   </td>
                 ))}
               </tr>
             ))}
-            {students.length === 0 && (
-              <tr>
-                <td colSpan={days.length + 1} className="px-4 py-6 text-center text-slate-400">
-                  Lớp chưa có học sinh
-                </td>
-              </tr>
-            )}
           </tbody>
         </table>
-      </div>
+      </Card>
 
-      {students.length > 0 && (
-        <button type="submit" className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white">
-          💾 Lưu ({selectedCount} buổi)
-        </button>
-      )}
+      <Button type="submit" variant="primary">
+        <SaveIcon /> Lưu ({selectedCount} buổi)
+      </Button>
     </form>
   );
 }

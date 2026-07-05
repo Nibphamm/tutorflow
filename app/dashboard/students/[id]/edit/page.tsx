@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { requireCenterId } from "@/lib/auth-helpers";
 import { StudentForm } from "../../student-form";
 import { updateStudentAction } from "../../actions";
+import { PageHeader } from "@/components/ui";
 
 export default async function EditStudentPage({
   params,
@@ -19,8 +20,8 @@ export default async function EditStudentPage({
   if (!student) notFound();
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-lg font-semibold text-slate-900">Sửa học sinh</h1>
+    <div className="space-y-5">
+      <PageHeader title="Sửa học sinh" />
       <StudentForm
         classes={classes}
         initial={student}

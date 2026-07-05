@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import type { StudentFormState } from "./actions";
+import { Button, Card, Field, Input, Select } from "@/components/ui";
 
 type ClassOption = { id: string; name: string };
 
@@ -35,139 +36,119 @@ export function StudentForm({
   const [hasSubject2, setHasSubject2] = useState(!!initial?.subject2Name);
 
   return (
-    <form action={formAction} className="max-w-md space-y-4 rounded-lg bg-white p-6 shadow">
-      {initial?.id && <input type="hidden" name="id" value={initial.id} />}
+    <Card className="max-w-lg">
+      <form action={formAction} className="space-y-5">
+        {initial?.id && <input type="hidden" name="id" value={initial.id} />}
 
-      <div className="space-y-1">
-        <label className="text-sm font-medium text-slate-700">Họ và tên</label>
-        <input
-          name="name"
-          required
-          defaultValue={initial?.name}
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-        />
-      </div>
+        <Field label="Họ và tên" required>
+          <Input name="name" required defaultValue={initial?.name} />
+        </Field>
 
-      <div className="space-y-1">
-        <label className="text-sm font-medium text-slate-700">Lớp</label>
-        <select
-          name="classId"
-          required
-          defaultValue={initial?.classId}
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-        >
-          <option value="">-- Chọn lớp --</option>
-          {classes.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
-      </div>
+        <Field label="Lớp" required>
+          <Select name="classId" required defaultValue={initial?.classId}>
+            <option value="">-- Chọn lớp --</option>
+            {classes.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </Select>
+        </Field>
 
-      <div className="space-y-1">
-        <label className="text-sm font-medium text-slate-700">Mô hình tính phí</label>
-        <div className="flex gap-4 text-sm">
-          <label className="flex items-center gap-1">
-            <input
-              type="radio"
-              name="feeModel"
-              value="PER_SESSION"
-              checked={feeModel === "PER_SESSION"}
-              onChange={() => setFeeModel("PER_SESSION")}
-            />
-            Tính theo buổi
-          </label>
-          <label className="flex items-center gap-1">
-            <input
-              type="radio"
-              name="feeModel"
-              value="FIXED"
-              checked={feeModel === "FIXED"}
-              onChange={() => setFeeModel("FIXED")}
-            />
-            Cố định/tháng
-          </label>
-        </div>
-      </div>
-
-      {feeModel === "FIXED" ? (
-        <div className="space-y-1">
-          <label className="text-sm font-medium text-slate-700">Học phí cố định (đ)</label>
-          <input
-            name="fixedFee"
-            type="number"
-            min={0}
-            defaultValue={initial?.fixedFee ?? undefined}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-          />
-        </div>
-      ) : (
-        <div className="space-y-3 rounded-md border border-slate-200 p-3">
-          <div className="grid grid-cols-2 gap-2">
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-600">Tên buổi 1</label>
+        <fieldset className="space-y-2">
+          <legend className="text-sm font-medium text-slate-700">Mô hình tính phí</legend>
+          <div className="flex flex-col gap-2 sm:flex-row sm:gap-4">
+            <label className="flex items-center gap-2 text-sm text-slate-700">
               <input
-                name="subject1Name"
-                defaultValue={initial?.subject1Name ?? "Buổi 1"}
-                className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+                type="radio"
+                name="feeModel"
+                value="PER_SESSION"
+                checked={feeModel === "PER_SESSION"}
+                onChange={() => setFeeModel("PER_SESSION")}
+                className="h-4 w-4 accent-indigo-600"
               />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-600">Đơn giá/buổi (đ)</label>
+              Tính theo buổi
+            </label>
+            <label className="flex items-center gap-2 text-sm text-slate-700">
               <input
-                name="subject1Price"
-                type="number"
-                min={0}
-                defaultValue={initial?.subject1Price ?? undefined}
-                className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+                type="radio"
+                name="feeModel"
+                value="FIXED"
+                checked={feeModel === "FIXED"}
+                onChange={() => setFeeModel("FIXED")}
+                className="h-4 w-4 accent-indigo-600"
               />
-            </div>
+              Cố định/tháng
+            </label>
           </div>
+        </fieldset>
 
-          <label className="flex items-center gap-2 text-xs text-slate-600">
-            <input
-              type="checkbox"
-              checked={hasSubject2}
-              onChange={(e) => setHasSubject2(e.target.checked)}
+        {feeModel === "FIXED" ? (
+          <Field label="Học phí cố định (đ)">
+            <Input
+              name="fixedFee"
+              type="number"
+              min={0}
+              inputMode="numeric"
+              defaultValue={initial?.fixedFee ?? undefined}
             />
-            Học sinh có buổi/môn thứ 2
-          </label>
-
-          {hasSubject2 && (
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-600">Tên buổi 2</label>
-                <input
-                  name="subject2Name"
-                  defaultValue={initial?.subject2Name ?? ""}
-                  className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-600">Đơn giá/buổi (đ)</label>
-                <input
-                  name="subject2Price"
+          </Field>
+        ) : (
+          <div className="space-y-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Tên buổi 1">
+                <Input name="subject1Name" defaultValue={initial?.subject1Name ?? "Buổi 1"} />
+              </Field>
+              <Field label="Đơn giá/buổi (đ)">
+                <Input
+                  name="subject1Price"
                   type="number"
                   min={0}
-                  defaultValue={initial?.subject2Price ?? undefined}
-                  className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+                  inputMode="numeric"
+                  defaultValue={initial?.subject1Price ?? undefined}
                 />
-              </div>
+              </Field>
             </div>
-          )}
-        </div>
-      )}
 
-      {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
+            <label className="flex items-center gap-2 text-sm text-slate-700">
+              <input
+                type="checkbox"
+                checked={hasSubject2}
+                onChange={(e) => setHasSubject2(e.target.checked)}
+                className="h-4 w-4 accent-indigo-600"
+              />
+              Học sinh có buổi/môn thứ 2
+            </label>
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="w-full rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
-      >
-        {pending ? "Đang lưu..." : submitLabel}
-      </button>
-    </form>
+            {hasSubject2 && (
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Tên buổi 2">
+                  <Input name="subject2Name" defaultValue={initial?.subject2Name ?? ""} />
+                </Field>
+                <Field label="Đơn giá/buổi (đ)">
+                  <Input
+                    name="subject2Price"
+                    type="number"
+                    min={0}
+                    inputMode="numeric"
+                    defaultValue={initial?.subject2Price ?? undefined}
+                  />
+                </Field>
+              </div>
+            )}
+          </div>
+        )}
+
+        {state?.error && (
+          <p role="alert" className="text-sm text-red-600">
+            {state.error}
+          </p>
+        )}
+
+        <Button type="submit" variant="primary" disabled={pending} className="w-full">
+          {pending ? "Đang lưu..." : submitLabel}
+        </Button>
+      </form>
+    </Card>
   );
 }

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { requireCenterId } from "@/lib/auth-helpers";
 import { SettingsForm } from "./settings-form";
+import { PageHeader } from "@/components/ui";
 
 export default async function SettingsPage() {
   const centerId = await requireCenterId();
@@ -9,8 +10,8 @@ export default async function SettingsPage() {
   if (!center) notFound();
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-lg font-semibold text-slate-900">⚙️ Thiết lập trung tâm</h1>
+    <div className="space-y-5">
+      <PageHeader title="Thiết lập trung tâm" />
       <SettingsForm center={center} />
     </div>
   );

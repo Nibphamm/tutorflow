@@ -1,8 +1,16 @@
 @import "tailwindcss";
 
+/*
+ * Root cause của bug "chữ chìm trong ô": body color đổi theo
+ * prefers-color-scheme (dark), nhưng input/select/textarea kế thừa
+ * color đó trong khi nền vẫn sáng -> chữ trắng trên nền trắng.
+ * Fix 1 lần ở đây: chốt color-scheme light (app này chưa có dark
+ * theme thiết kế riêng) + luôn set màu chữ/nền rõ ràng cho form control.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light;
+  --background: #f8fafc; /* slate-50 */
+  --foreground: #0f172a; /* slate-900 */
 }
 
 @theme inline {
@@ -12,15 +20,26 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+input,
+select,
+textarea {
+  color: #0f172a; /* slate-900 */
+  background-color: #ffffff;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #94a3b8; /* slate-400 */
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled {
+  background-color: #f1f5f9; /* slate-100 */
+  color: #64748b;
 }

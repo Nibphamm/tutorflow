@@ -2,6 +2,8 @@ import { prisma } from "@/lib/db";
 import { requireCenterId } from "@/lib/auth-helpers";
 import { ClassForm } from "./class-form";
 import { deleteClassAction } from "./actions";
+import { Card, EmptyState, PageHeader } from "@/components/ui";
+import { TrashIcon } from "@/components/icons";
 
 export default async function ClassesPage() {
   const centerId = await requireCenterId();
@@ -12,39 +14,47 @@ export default async function ClassesPage() {
   });
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-lg font-semibold text-slate-900">Quản lý lớp</h1>
-      <ClassForm />
-      <table className="w-full overflow-hidden rounded-lg bg-white text-sm shadow">
-        <thead className="bg-slate-100 text-left text-slate-600">
-          <tr>
-            <th className="px-4 py-2">Lớp</th>
-            <th className="px-4 py-2">Số học sinh</th>
-            <th className="px-4 py-2"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {classes.map((c) => (
-            <tr key={c.id} className="border-t border-slate-100">
-              <td className="px-4 py-2">{c.name}</td>
-              <td className="px-4 py-2">{c._count.students}</td>
-              <td className="px-4 py-2 text-right">
-                <form action={deleteClassAction}>
-                  <input type="hidden" name="id" value={c.id} />
-                  <button className="text-red-600 hover:underline">Xoá</button>
-                </form>
-              </td>
-            </tr>
-          ))}
-          {classes.length === 0 && (
-            <tr>
-              <td colSpan={3} className="px-4 py-6 text-center text-slate-400">
-                Chưa có lớp nào
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+    <div className="space-y-5">
+      <PageHeader title="Quản lý lớp" />
+
+      <Card>
+        <ClassForm />
+      </Card>
+
+      {classes.length === 0 ? (
+        <EmptyState>Chưa có lớp nào. Tạo lớp đầu tiên ở form trên.</EmptyState>
+      ) : (
+        <Card padded={false} className="overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="bg-slate-50 text-left text-slate-500">
+              <tr>
+                <th className="px-4 py-3 font-medium">Lớp</th>
+                <th className="px-4 py-3 font-medium">Số học sinh</th>
+                <th className="px-4 py-3"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {classes.map((c) => (
+                <tr key={c.id} className="hover:bg-slate-50/60">
+                  <td className="px-4 py-3 font-medium text-slate-900">{c.name}</td>
+                  <td className="px-4 py-3 text-slate-600">{c._count.students}</td>
+                  <td className="px-4 py-3 text-right">
+                    <form action={deleteClassAction}>
+                      <input type="hidden" name="id" value={c.id} />
+                      <button
+                        className="flex h-8 w-8 items-center justify-center rounded-lg text-red-500 hover:bg-red-50 ml-auto"
+                        aria-label="Xoá lớp"
+                      >
+                        <TrashIcon />
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
+      )}
     </div>
   );
 }
