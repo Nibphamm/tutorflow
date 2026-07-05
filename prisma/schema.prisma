@@ -1,0 +1,129 @@
+// TutorFlow — Prisma schema (Postgres)
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum CenterType {
+  EN
+  MATH
+  ART
+  PRIMARY
+  CODING
+  CUSTOM
+}
+
+enum Role {
+  OWNER
+  TEACHER
+}
+
+enum FeeModel {
+  FIXED
+  PER_SESSION
+}
+
+enum StudentStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum RemarkStatus {
+  DRAFT
+  SENT
+}
+
+model Center {
+  id              String     @id @default(cuid())
+  name            String
+  type            CenterType @default(EN)
+  displayName     String?
+  bankBin         String?
+  bankAccount     String?
+  bankAccountName String?
+  defaultTheme    String     @default("default")
+  remarkLabel1    String     @default("Điểm Nói")
+  remarkLabel2    String     @default("Điểm Viết")
+  createdAt       DateTime   @default(now())
+
+  users    User[]
+  classes  Class[]
+  students Student[]
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         Role     @default(OWNER)
+  centerId     String
+  center       Center   @relation(fields: [centerId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+}
+
+model Class {
+  id       String    @id @default(cuid())
+  name     String
+  centerId String
+  center   Center    @relation(fields: [centerId], references: [id], onDelete: Cascade)
+  students Student[]
+}
+
+model Student {
+  id            String        @id @default(cuid())
+  name          String
+  classId       String
+  class         Class         @relation(fields: [classId], references: [id], onDelete: Cascade)
+  centerId      String
+  center        Center        @relation(fields: [centerId], references: [id], onDelete: Cascade)
+  feeModel      FeeModel      @default(PER_SESSION)
+  fixedFee      Int?
+  subject1Name  String?       @default("Buổi 1")
+  subject1Price Int?
+  subject2Name  String?
+  subject2Price Int?
+  // CRM (phase sau — nullable sẵn)
+  parentName    String?
+  parentPhone   String?
+  zalo          String?
+  note          String?
+  startDate     DateTime?
+  status        StudentStatus @default(ACTIVE)
+  createdAt     DateTime      @default(now())
+
+  attendances Attendance[]
+  remarks     Remark[]
+}
+
+model Attendance {
+  id           String   @id @default(cuid())
+  studentId    String
+  student      Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  date         DateTime @db.Date
+  present      Boolean  @default(true)
+  subjectIndex Int      @default(0)
+
+  @@unique([studentId, date, subjectIndex])
+  @@index([studentId, date])
+}
+
+model Remark {
+  id            String       @id @default(cuid())
+  studentId     String
+  student       Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  date          DateTime     @db.Date
+  score1        Int?
+  score2        Int?
+  comment       String?
+  absenceReason String?
+  status        RemarkStatus @default(DRAFT)
+  updatedAt     DateTime     @updatedAt
+
+  @@unique([studentId, date])
+  @@index([studentId, date])
+}

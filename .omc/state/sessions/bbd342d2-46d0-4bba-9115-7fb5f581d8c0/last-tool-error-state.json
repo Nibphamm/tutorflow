@@ -1,0 +1,7 @@
+{
+  "tool_name": "mcp__chrome-devtools__evaluate_script",
+  "tool_input_preview": "{\"function\":\"(text) => { const els = Array.from(document.querySelectorAll('*')); const el = els.find(e => e.textContent.trim() === text && e.children.length === 0); let clickable = el; for (let i=0;i<...",
+  "error": "Error: Element uid \"Quản lý Thu nợ\" not found on page 1.",
+  "timestamp": "2026-07-04T12:40:23.623Z",
+  "retry_count": 1
+}

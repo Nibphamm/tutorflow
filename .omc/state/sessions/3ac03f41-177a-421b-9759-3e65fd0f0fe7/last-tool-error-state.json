@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"ls -la /d/TutorFlow/prisma/migrations 2>&1; ls /d/TutorFlow/prisma/migrations/*/  2>&1\",\"description\":\"Check if migration files were created\"}",
+  "error": "Exit code 2\nls: cannot access '/d/TutorFlow/prisma/migrations': No such file or directory\nls: cannot access '/d/TutorFlow/prisma/migrations/*/': No such file or directory",
+  "timestamp": "2026-07-05T05:22:07.475Z",
+  "retry_count": 1
+}

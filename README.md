@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TutorFlow
 
-## Getting Started
+Web quản lý trung tâm dạy học/gia sư nhỏ (điểm danh, tính học phí theo buổi/tháng, xuất
+Phiếu Học Phí có QR VietQR). Clone chức năng lõi của phieuhocphi.com — xem `TutorFlow.md`
+để biết chi tiết khảo sát sản phẩm gốc và phạm vi MVP.
 
-First, run the development server:
+Stack: Next.js 16 (App Router, TypeScript) + Prisma + Postgres + Auth.js v5 (credentials).
+
+## Dev local
+
+Cần Docker (Postgres) hoặc Postgres tự chạy.
 
 ```bash
+docker run -d --name tutorflow-db -e POSTGRES_USER=tutorflow -e POSTGRES_PASSWORD=tutorflow \
+  -e POSTGRES_DB=tutorflow -p 5432:5432 postgres:16-alpine
+
+cp .env.example .env   # điền DATABASE_URL + AUTH_SECRET (openssl rand -base64 32)
+npm install
+npm run db:migrate     # áp migration vào DB local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Mở http://localhost:3000 → `/register` để tạo trung tâm đầu tiên.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Test
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm test    # unit test lib/fees.ts (tính học phí)
+npm run lint
+npm run build
+```
 
-## Learn More
+## Deploy production (Vercel + Neon)
 
-To learn more about Next.js, take a look at the following resources:
+1. Tạo project Postgres tại [neon.tech](https://neon.tech), lấy connection string **pooled**.
+2. Import repo vào [Vercel](https://vercel.com/new).
+3. Thêm biến môi trường trên Vercel:
+   - `DATABASE_URL` = connection string Neon (pooled)
+   - `AUTH_SECRET` = `openssl rand -base64 32`
+4. Deploy. Build command đã cấu hình sẵn để tự chạy `prisma migrate deploy` trước khi build
+   (xem `package.json` → script `build`).
+5. Sau khi deploy xong, vào `/register` trên domain production để tạo trung tâm đầu tiên,
+   sau đó vào **Thiết lập** để nhập thông tin ngân hàng (VietQR).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Cấu trúc
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `prisma/schema.prisma` — data model (Center, User, Class, Student, Attendance, Remark)
+- `lib/fees.ts` — logic tính học phí (cố định / theo buổi tối đa 2 môn)
+- `lib/vietqr.ts` — sinh URL ảnh QR chuyển khoản (img.vietqr.io)
+- `app/dashboard/*` — các route: học sinh, lớp, điểm danh (theo ngày + hàng loạt), phiếu học
+  phí, nhận xét, thiết lập
 
-## Deploy on Vercel
+## Ngoài phạm vi MVP (chưa làm)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Thu nợ/doanh thu, lịch dạy, đa giáo viên/phân quyền, chấm công GV, hồ sơ CRM đầy đủ, trang
+web công khai trung tâm, bảng giá/thanh toán, affiliate, chống bot đăng ký. Xem `TutorFlow.md`
+mục 14 để biết danh sách đầy đủ.
